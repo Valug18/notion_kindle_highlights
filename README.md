@@ -1,4 +1,4 @@
-# Notion Kindle Highlights
+# Aspectos destacados de Notion Kindle
 
 Este proyecto permite leer subrayados de Kindle desde un archivo `My Clippings.txt` y cargarlos en una base de datos de Notion.
 
@@ -10,7 +10,7 @@ Este proyecto permite leer subrayados de Kindle desde un archivo `My Clippings.t
 
 ## Instalación
 
-1. Clona el repositorio:
+1. Clonar el repositorio:
 
     ```bash
     git clone https://github.com/tu-usuario/notion-kindle-highlights.git
@@ -44,9 +44,19 @@ Este proyecto permite leer subrayados de Kindle desde un archivo `My Clippings.t
     }
     ```
 
+## Obtener un token de integración de Notion
+
+1. Ve a [Notion Integrations](https://www.notion.so/my-integrations).
+2. Crea una nueva integración y copia el token de integración.
+3. Invita a la integración a tu base de datos de Notion.
+
 ## Uso
 
 Ejecuta el script principal:
+
+```bash
+python main.py
+
 
 ```bash
 ### `main.py`
