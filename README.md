@@ -1,4 +1,54 @@
+# Notion Kindle Highlights
 
+Este proyecto permite leer subrayados de Kindle desde un archivo `My Clippings.txt` y cargarlos en una base de datos de Notion.
+
+## Requisitos
+
+- Python 3.6 o superior
+- Una cuenta de Notion
+- Un token de integración de Notion
+
+## Instalación
+
+1. Clona el repositorio:
+
+    ```bash
+    git clone https://github.com/tu-usuario/notion-kindle-highlights.git
+    cd notion-kindle-highlights
+    ```
+
+2. Crea y activa un entorno virtual (opcional pero recomendado):
+
+    ```bash
+    python -m venv venv
+    source venv/bin/activate  # En Windows usa `venv\Scripts\activate`
+    ```
+
+3. Instala las dependencias:
+
+    ```bash
+    pip install -r requirements.txt
+    ```
+
+4. Coloca tu archivo `My Clippings.txt` en la carpeta `clippings`.
+
+## Configuración
+
+5. Crea un archivo `config.json` en la raíz del proyecto con el siguiente contenido:
+
+    ```json
+    {
+      "token": "tu_token_de_notion",
+      "database_id": "tu_id_de_base_de_datos",
+      "file_path": "clippings/My Clippings.txt"
+    }
+    ```
+
+## Uso
+
+Ejecuta el script principal:
+
+```bash
 ### `main.py`
 
 ```python
