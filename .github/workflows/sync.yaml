@@ -1,0 +1,39 @@
+name: Sync Kindle Highlights
+on: [push, workflow_dispatch]
+
+jobs:
+  sync-highlights:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.9'
+
+      - name: Install dependencies
+        run: |
+          python -m venv venv
+          source venv/bin/activate
+          pip install -r requirements.txt
+
+      - name: Sync highlights
+        run: |
+          source venv/bin/activate
+          python main.py
+        env:
+          NOTION_API_KEY: ${{ secrets.NOTION_API_KEY }}
+          DATABASE_ID: ${{ secrets.DATABASE_ID }}
+
+      - name: Commit cache changes
+        uses: EndBug/add-and-commit@v9
+        with:
+          message: Commit cache changes
+          add: sync.json
+
+      - name: Push cache changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
