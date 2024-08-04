@@ -51,6 +51,7 @@ Este proyecto permite leer subrayados de Kindle desde un archivo `My Clippings.t
 3. Invita a la integración a tu base de datos de Notion.
 
 ## Uso
+Cada vez que subas un nuevo archivo My Clippings.txt al repositorio, GitHub Actions se encargará de sincronizar automáticamente los nuevos subrayados con tu base de datos de Notion.
 
 Ejecuta el script principal:
 
