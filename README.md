@@ -66,34 +66,7 @@ import requests
 import json
 import re
 
-def load_config():
-    with open('config.json', 'r') as config_file:
-        return json.load(config_file)
-
-def get_existing_entries(token, database_id):
-    url = f'https://api.notion.com/v1/databases/{database_id}/query'
-    headers = {
-        "Authorization": f"Bearer {token}",
-        "Content-Type": "application/json",
-        "Notion-Version": "2022-06-28"
-    }
-
-    response = requests.post(url, headers=headers, json={})
-    response.raise_for_status()
-    data = response.json()
-
-    entries = {}
-    for result in data.get('results', []):
-        book_title = result['properties'].get('Book', {}).get('title', [{}])[0].get('text', {}).get('content', '')
-        page_number = result['properties'].get('Page', {}).get('number', None)
-        date = result['properties'].get('Date', {}).get('date', {}).get('start', '')
-        
-        key = (book_title, page_number, date)
-        entries[key] = result['id']
-    
-    return entries
-
-def create_notion_page(token, database_id, book, highlights, page, date):
+def create_notion_page(token, database_id, book, highlights, page, date, author=None, status=None):
     url = 'https://api.notion.com/v1/pages'
     headers = {
         "Authorization": f"Bearer {token}",
@@ -110,31 +83,52 @@ def create_notion_page(token, database_id, book, highlights, page, date):
             }
         })
 
-    data = {
-        "parent": {"database_id": database_id},
-        "properties": {
-            "Book": {
-                "title": [
-                    {
-                        "type": "text",
-                        "text": {
-                            "content": book
-                        }
+    properties = {
+        "Book": {
+            "title": [
+                {
+                    "type": "text",
+                    "text": {
+                        "content": book
                     }
-                ]
-            },
-            "Date": {
-                "date": {
-                    "start": date
                 }
-            },
-            "Page": {
-                "number": page if page is not None else 0
-            },
-            "Highlight": {
-                "rich_text": rich_text_highlights
+            ]
+        },
+        "Date": {
+            "date": {
+                "start": date
+            }
+        },
+        "Page": {
+            "number": page if page is not None else 0
+        },
+        "Highlight": {
+            "rich_text": rich_text_highlights
+        }
+    }
+
+    if author:
+        properties["Author"] = {
+            "rich_text": [
+                {
+                    "type": "text",
+                    "text": {
+                        "content": author
+                    }
+                }
+            ]
+        }
+
+    if status:
+        properties["Status"] = {
+            "select": {
+                "name": status
             }
         }
+
+    data = {
+        "parent": {"database_id": database_id},
+        "properties": properties
     }
 
     print(f"Sending data to Notion: {json.dumps(data, indent=2)}")
@@ -144,7 +138,6 @@ def create_notion_page(token, database_id, book, highlights, page, date):
         response.raise_for_status()
         print(f"Response Status Code: {response.status_code}")
         print(f"Response Text: {response.text}")
-        return response.json().get('id')
     except requests.exceptions.HTTPError as err:
         print(f"HTTP error occurred: {err}")
         print(f"Response Status Code: {response.status_code}")
@@ -165,14 +158,17 @@ def read_clippings(file_path):
             book = lines[0].strip()
             page_info = lines[1].strip()
             highlight_lines = lines[2:]
-            date = "2024-08-03T00:00:00Z"
+            date = "2024-08-03T00:00:00Z"  # Cambia esto si es necesario
 
+            # Extraer el número de página usando expresión regular
             page_match = re.search(r'\b\d+\b', page_info)
             page = int(page_match.group(0)) if page_match else None
 
+            # Extraer la fecha real si está presente en el archivo
             date_match = re.search(r'\d{2}/\d{2}/\d{4}', entry)
             if date_match:
                 date = date_match.group(0)
+                # Convertir la fecha a formato ISO 8601
                 date = f"{date[-4:]}-{date[3:5]}-{date[:2]}T00:00:00Z"
 
             highlights = [line.strip() for line in highlight_lines]
@@ -181,20 +177,14 @@ def read_clippings(file_path):
     return parsed_entries
 
 if __name__ == "__main__":
-    config = load_config()
-    token = config['token']
-    database_id = config['database_id']
-    file_path = config['file_path']
+    import os
+
+    token = os.getenv('NOTION_API_KEY')
+    database_id = os.getenv('DATABASE_ID')
+    file_path = 'clippings/My Clippings.txt'
     
-    existing_entries = get_existing_entries(token, database_id)
     clippings = read_clippings(file_path)
     
     for clipping in clippings:
         book, highlights, page, date = clipping
-        key = (book, page, date)
-
-        if key not in existing_entries:
-            page_id = create_notion_page(token, database_id, book, highlights, page, date)
-            print(f"Created page with ID: {page_id}")
-        else:
-            print(f"Entry already exists for book: {book}, page: {page}, date: {date}")
+        create_notion_page(token, database_id, book, highlights, page, date)
